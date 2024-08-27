@@ -1,14 +1,13 @@
 let target = 0;
 let current = 0;
-const ease = 0.075;
+let ease = 0.075;
 
 const slider = document.querySelector(".slider");
 const sliderWrapper = document.querySelector(".slider-wrapper");
 const markerWrapper = document.querySelector(".marker-wrapper");
 const activeSlide = document.querySelector(".active-slide");
 
-// Set max scroll distance
-let maxScroll = sliderWrapper.scrollWidth - window.innerWidth;
+let maxScroll = sliderWrapper.offsetWidth - window.innerWidth;
 
 function lerp(start, end, factor) {
   return start + (end - start) * factor;
@@ -22,35 +21,34 @@ function updateActiveSlideNumber(markerMove, markerMaxMove) {
 }
 
 function update() {
-  // Linear interpolation for smooth scroll
   current = lerp(current, target, ease);
 
-  // Update slider position
-  sliderWrapper.style.transform = `translateX(${-current}px)`;
+  gsap.set(".slider-wrapper", {
+    x: -current,
+  });
 
-  // Calculate movement ratio and marker position
-  const moveRatio = current / maxScroll;
-  const markerMaxMove = window.innerWidth - markerWrapper.offsetWidth - 170;
-  const markerMove = 70 + moveRatio * markerMaxMove;
+  let moveRatio = current / maxScroll;
 
-  markerWrapper.style.transform = `translateX(${markerMove}px)`;
+  let markerMaxMove = window.innerWidth - markerWrapper.offsetWidth - 170;
+  let markerMove = 70 + moveRatio * markerMaxMove;
+  gsap.set(".marker-wrapper", {
+    x: markerMove,
+  });
 
-  // Update active slide indicator
   updateActiveSlideNumber(markerMove, markerMaxMove);
 
   requestAnimationFrame(update);
 }
 
-// Recalculate max scroll on resize
 window.addEventListener("resize", () => {
-  maxScroll = sliderWrapper.scrollWidth - window.innerWidth;
+  maxScroll = sliderWrapper.offsetWidth - window.innerWidth;
 });
 
-// Scroll handler
 window.addEventListener("wheel", (e) => {
   target += e.deltaY;
-  target = Math.max(0, Math.min(target, maxScroll));
+
+  target = Math.max(0, target);
+  target = Math.min(maxScroll, target);
 });
 
-// Start the animation loop
 update();
